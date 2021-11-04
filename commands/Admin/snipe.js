@@ -1,25 +1,28 @@
-const Discord = require('discord.js')
-const db = require('quick.db')
-const colors = require('./../../colors.json')
+const Discord = require('discord.js');
 
 module.exports = {
-    name: 'snipe',
-    description: 'Snipe a deleted message',
-    usage: 'snipe',
-    guildOnly: true,
-    run: async (client, message, args) => {
-        let msg = await db.get(`msg_${message.channel.id}`)
-        if (!msg) {
-            return message.channel.send(`There Nothing to snipe`)
-        }
-        let author = await db.get(`author_${message.channel.id}`)
-        let icon = message.guild.iconURL()
-        let embed = new Discord.MessageEmbed()
-            .setAuthor(message.client.users.cache.get(author).tag, message.client.users.cache.get(author).displayAvatarURL({ dynamic: true}))
-            .setDescription(msg)
-            .setFooter(message.client.user.username, message.client.user.displayAvatarURL())
-            .setColor(colors.uptime)
-        message.channel.send(embed)
+	name: 'snipe',
+	cooldown: 1000,
+	usage: '`a!snipe`',
+	description: 'get the deleted message',
+	aliases: ['s'],
+	run: async (client, message, args) => {
+		const msg = client.snipes.get(message.channel.id);
+		if (!msg)
+			return message.channel.send(
+				'There are no deleted messages in this channel!'
+			);
+		const embed = new Discord.MessageEmbed()
+			.setAuthor(msg.author)
+			.setDescription(msg.content)
+			.setColor('#8AFB17')
+			.setThumbnail(
+				'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfE8tCpK5BZH-SY6GahjM75kQW2qrSEX6Kg&usqp=CAU.png'
+			)
+			.setTimestamp();
+		if (msg.image) embed.setImage(msg.image);
 
-    }
-}
+		message.channel.send(embed);
+	}
+};
+
